@@ -9,7 +9,7 @@ function readSingleFile(evt)
 		ff.onload = function(e) 
 		{ 
 			var contents = e.target.result.trim();
-			var lines = contents.split("\n\r\n");
+			var lines = contents.split("\r\n\r\n");
 			var output = "";
 			if(checkFileFormat(lines))
 			{			
@@ -39,7 +39,7 @@ function readSingleFile(evt)
 					}
 					
 					
-					if(line.indexOf("]") == line.length - 2) //no further entries
+					if(line.indexOf("]") == lines.length - 2) //no further entries
 					{
 						output += "Registry." + base + ".CreateSubKey(\"" + key.substring(line.indexOf("\\")).split("\\").join("\\\\") + "\");\n";
 					}
@@ -47,12 +47,17 @@ function readSingleFile(evt)
 					{
 						keyUsed = true;
 						output += "key = Registry." + base + ".CreateSubKey(\"" + key.substring(line.indexOf("\\")).split("\\").join("\\\\") + "\");\n";
-						var keys = line.substring(line.indexOf("]") + 3).split("\n");
+						var keys = line.substring(line.indexOf("]") +1).split("\r\n");
 						for(var x = 0; x < keys.length; x++)
 						{
+							if (keys[x].trim() == "") continue;
 							var subkeys = keys[x].trim().split("=");
-							if(subkeys[0] == "@") subkeys[0] = "\"\"";
-							output += "key.CreateSubKey(" + subkeys[0] + ")?.SetValue(\"\", " + subkeys[1] + ");\n";	
+							if (subkeys !== undefined)
+							{
+								if(subkeys[0] == "@") subkeys[0] = "\"\"";
+								if(subkeys[1].includes("dword:")) subkeys[1] = subkeys[1].replace("dword:", "0x") + ",RegistryValueKind.DWord";
+								output += "key?.SetValue("+subkeys[0]+", " + subkeys[1] + ");\n";	
+							}
 						}
 						
 						//output += line;
