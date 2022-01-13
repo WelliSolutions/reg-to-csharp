@@ -46,7 +46,9 @@ function readSingleFile(evt)
 					else
 					{
 						keyUsed = true;
-						output += "key = Registry." + base + ".CreateSubKey(\"" + key.substring(line.indexOf("\\")).split("\\").join("\\\\") + "\");\n";
+						keyName = key.substring(line.indexOf("\\")).split("\\").join("\\\\");
+						keyName = keyName.replace("{","{{").replace("}","}}"); // for easier string interpolation
+						output += "key = Registry." + base + ".CreateSubKey($\"" + keyName + "\");\n";
 						var keys = line.substring(line.indexOf("]") +1).split("\r\n");
 						for(var x = 0; x < keys.length; x++)
 						{
